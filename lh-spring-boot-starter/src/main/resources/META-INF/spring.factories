@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.lh.auto.datasource.config.AutoDruidMonitor
+org.springframework.boot.SpringApplicationRunListener=\
+com.lh.auto.datasource.config.listener.AutoConfigDataSourceRunListener
