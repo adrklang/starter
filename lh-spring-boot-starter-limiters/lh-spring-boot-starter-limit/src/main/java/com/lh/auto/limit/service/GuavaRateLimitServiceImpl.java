@@ -20,16 +20,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     @Autowired(required = false)
     private HttpSession session;
     private static Logger logger = LoggerFactory.getLogger(GuavaRateLimitServiceImpl.class);
-    private static ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock();
     private static ConcurrentHashMap<String,RateLimiter> concurrentHashMap = new ConcurrentHashMap<>();
-    private static ReentrantLock writeLock = new ReentrantLock();
     @PostConstruct
     public void listener(){
         new Thread(() ->{
@@ -43,13 +39,8 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
                         Long time = value.getTime();
                         Long currentTime = System.currentTimeMillis();
                         if(currentTime - time >= 1800000){//30分钟
-                            try{
-                                writeLock.lock();
-                                concurrentHashMap.remove(key);
-                                logger.info("Rate --- 限流对象超时，已删除:" + key);
-                            }finally {
-                                writeLock.unlock();
-                            }
+                            concurrentHashMap.remove(key);
+                            logger.info("Rate --- 限流对象超时，已删除:" + key);
                         }
                     }
                 } catch (InterruptedException e) {
@@ -93,16 +84,11 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     }
     private boolean proceedingSessionRateLimit(ResourceLimit resourceLimit){
         String key = getSessionKey(resourceLimit);
-        try{
-            reentrantLock.writeLock().lock();
-            RateLimiter rateLimiter = concurrentHashMap.get(key);
-            if(rateLimiter.tryAcquire()){
-                return true;
-            }
-            return false;
-        }finally {
-            reentrantLock.writeLock().unlock();
+        RateLimiter rateLimiter = concurrentHashMap.get(key);
+        if(rateLimiter.tryAcquire()){
+            return true;
         }
+        return false;
     }
     private String getSessionKey(ResourceLimit resourceLimit){
         String key = session != null ? session.getId() + ":" + resourceLimit.key() : "SessionNone:" + resourceLimit.key();
@@ -121,16 +107,11 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
 
     private boolean proceedingNoneRateLimit(ResourceLimit resourceLimit) {
         String key = resourceLimit.key();
-        try{
-            reentrantLock.writeLock().lock();
-            RateLimiter rateLimiter = concurrentHashMap.get(key);
-            if(rateLimiter.tryAcquire()){
-                return true;
-            }
-            return false;
-        }finally {
-            reentrantLock.writeLock().unlock();
+        RateLimiter rateLimiter = concurrentHashMap.get(key);
+        if(rateLimiter.tryAcquire()){
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -162,8 +143,12 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     }
 
     private HttpServletRequest getRequest(){
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        return requestAttributes.getRequest();
+        try{
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            return requestAttributes.getRequest();
+        }catch (Exception ex){
+            return null;
+        }
     }
 
     private void ipLimit(ResourceLimit resourceLimit) {
@@ -193,16 +178,11 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
 
     private boolean proceedingIpRateLimit(ResourceLimit resourceLimit) {
         String key = getIpKey(resourceLimit);
-        try{
-            reentrantLock.writeLock().lock();
-            RateLimiter rateLimiter = concurrentHashMap.get(key);
-            if(rateLimiter.tryAcquire()){
-                return true;
-            }
-            return false;
-        }finally {
-            reentrantLock.writeLock().unlock();
+        RateLimiter rateLimiter = concurrentHashMap.get(key);
+        if(rateLimiter.tryAcquire()){
+            return true;
         }
+        return false;
     }
     private String getIpKey(ResourceLimit resourceLimit){
         String ip = IpUtils.getIp(getRequest());
