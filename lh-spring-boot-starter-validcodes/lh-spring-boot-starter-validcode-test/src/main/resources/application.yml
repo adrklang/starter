@@ -1,0 +1,27 @@
+lhstack:
+  myblog:
+    validcode:
+      width: 200
+      height: 60
+      length: 6
+      colors:
+        - '#409efa'
+        - '#409eff'
+        - '#d075cc'
+        - '#7b8822'
+        - '#f36fed'
+      contents:
+        - abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+        - 一二三四五六七八九十
+      bgColor: '#c5bcc5'
+      interferingLineColors:
+        - '#409efa'
+        - '#409eff'
+        - '#d075cc'
+        - '#7b8822'
+        - '#f36fed'
+      letterSpace: 5
+      fontSize: 30
+      fontFamily: 黑体
+      isBold: true
+      range: 15
