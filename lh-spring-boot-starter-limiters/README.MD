@@ -58,3 +58,9 @@ int secondsAddCount() default 1;
 //每秒添加多少个令牌，此属性必须必capacity小，只适用于JDKRateLimitService与自定义ResourceLimitService
 ```
 
+## lh-spring-limit 介绍
+
+```makefile
+让Application-Context.xml扫描到带有@EnableRateLimit的类即可，使用方法同上
+```
+

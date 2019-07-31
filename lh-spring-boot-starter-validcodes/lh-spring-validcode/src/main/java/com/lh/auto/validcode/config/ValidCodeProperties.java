@@ -3,17 +3,13 @@ package com.lh.auto.validcode.config;
 import com.lh.auto.validcode.consts.ValidCodeConst;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Arrays;
 import java.util.List;
 
-@ConfigurationProperties(prefix = "lhstack.myblog.validcode")
 @Data
 @Accessors(chain = true)
-@ConditionalOnProperty(prefix = "lhstack.myblog.validcode",matchIfMissing = false)
-public class MyblogValidCodeProperties {
+public class ValidCodeProperties {
     //验证码宽度
     private Integer width = ValidCodeConst.WIDTH;
     //验证码高度

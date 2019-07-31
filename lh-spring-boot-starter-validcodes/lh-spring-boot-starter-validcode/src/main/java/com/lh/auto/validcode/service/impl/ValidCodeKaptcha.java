@@ -1,7 +1,7 @@
 package com.lh.auto.validcode.service.impl;
 
 import com.google.common.primitives.Chars;
-import com.lh.auto.validcode.config.MyblogValidCodeProperties;
+import com.lh.auto.validcode.config.ValidCodeProperties;
 import com.lh.auto.validcode.model.ValidCode;
 import com.lh.auto.validcode.service.ValidCodeService;
 
@@ -14,21 +14,21 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Random;
 
-public class MyblogKaptcha implements ValidCodeService {
-    private MyblogValidCodeProperties properties;
+public class ValidCodeKaptcha implements ValidCodeService {
+    private ValidCodeProperties properties;
     private BufferedImage bufferedImage;
     private Graphics graphics;
     private Random random = new Random();
 
-    public MyblogKaptcha(MyblogValidCodeProperties myblogValidCodeProperties) {
-        this.properties = myblogValidCodeProperties;
+    public ValidCodeKaptcha(ValidCodeProperties validCodeProperties) {
+        this.properties = validCodeProperties;
     }
 
-    public MyblogKaptcha() {
-        this.properties = new MyblogValidCodeProperties();
+    public ValidCodeKaptcha() {
+        this.properties = new ValidCodeProperties();
     }
 
-    public void config(MyblogValidCodeProperties properties) {
+    public void config(ValidCodeProperties properties) {
         this.properties = properties;
     }
 
@@ -38,7 +38,6 @@ public class MyblogKaptcha implements ValidCodeService {
         graphics.setColor(Color.decode(properties.getBgColor()));
         graphics.fillRect(0, 0, properties.getWidth(), properties.getHeight());
         graphics.setFont(new Font(properties.getFontFamily(), properties.getIsBold() ? Font.BOLD : Font.PLAIN, properties.getFontSize()));
-        System.gc();//清理上一次操作留下的缓存
     }
 
     //返回ValidCode对象
