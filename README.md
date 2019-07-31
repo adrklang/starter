@@ -1,5 +1,5 @@
 # starter
 ```markdown
-这是我的springboot自创插件库，用于存放我的插件
+这是我的spring-boot-starter工具库
 ```
 
