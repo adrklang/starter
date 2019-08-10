@@ -181,6 +181,7 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
             if (secondsAddCount > capacity) {
                 secondsAddCount = capacity;
             }
+            this.seconds = seconds;
             this.capacity = capacity;
             this.secondsAddCount = secondsAddCount;
             queue = new LinkedBlockingDeque<>(capacity);
@@ -195,10 +196,10 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
 
         public boolean tryAcquire() {
             try {
+                boolean offer = this.offer();     
+            } finally {
                 Integer poll = queue.poll();
                 return poll != null;
-            } finally {
-                boolean offer = this.offer();
             }
         }
 
