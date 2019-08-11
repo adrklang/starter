@@ -61,7 +61,7 @@ public class MicroserviceMyblogLimitTestApplication  {
     }
 
     @GetMapping("hello/ip/{message}")
-    @ResourceLimit(key="message",seconds = 1, capacity = 5,fallbackFactory = FallbackFactory.class,method = "message",type = LimitType.IP,useLimitService = LimitService.JDK,secondsAddCount = 2)
+    @ResourceLimit(key="message",seconds = 15, capacity = 5,fallbackFactory = FallbackFactory.class,method = "message",type = LimitType.IP,useLimitService = LimitService.JDK,secondsAddCount = 2)
     public String ipMessage(@PathVariable("message") String message){
         return "hello " + message;
     }

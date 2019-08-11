@@ -6,6 +6,7 @@ import com.lh.auto.limit.utils.IpUtils;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -19,17 +20,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class JDKRateLimitServiceImpl implements ResourceLimitService {
     private static ConcurrentHashMap<String, JDKLimit> cache = null;
     private static ExecutorService executorService = null;
-    private static Thread jdkThread = null;
+    private AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+    @Value("${resource.limit.jdk.destroyTime:1800000}")
+    private Long waitTimeDestroy;
     static {
         cache = new ConcurrentHashMap<>();
+    }
+    public void init(){
         executorService = Executors.newSingleThreadExecutor();
-        jdkThread = new Thread(() -> {
+        executorService.execute(() ->{
             while (true) {
                 try {
                     Thread.sleep(1000);
@@ -39,7 +45,7 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
                         JDKLimit value = entry.getValue();
                         Long limitCreateTime = value.getCreateTime();
                         Long currentTime = System.currentTimeMillis();
-                        if (currentTime - limitCreateTime > 1800000) {
+                        if (currentTime - limitCreateTime > waitTimeDestroy) {
                             cache.remove(key);
                             log.info("JDK限流 --- 限流对象超时，已删除:" + key);
                         }
@@ -49,14 +55,19 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
                 }
             }
         });
-        jdkThread.setName("JDKRateLimitService线程监听开启");
-        jdkThread.setDaemon(true);
-        executorService.execute(jdkThread);
+        log.info("JDKLimit Thread Listener Create Success,createTime --- {}",System.currentTimeMillis());
     }
-
-
     @Override
     public Boolean isExist(ResourceLimit resourceLimit) {
+        //第一次限流创建之后创建线程监听销毁
+        if(!atomicBoolean.get()){
+            synchronized (JDKRateLimitServiceImpl.class){
+                if(!atomicBoolean.get()){
+                    atomicBoolean.set(true);
+                    init();
+                }
+            }
+        }
         switch (resourceLimit.type()) {
             case SESSION:
                 sessionLimitInit(resourceLimit);
@@ -172,6 +183,7 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
         private Integer secondsAddCount;
         //以双端队列方式存储令牌
         private Deque<Integer> queue;
+        //容量
         private Integer capacity;
 
         private JDKLimit(Integer seconds, Integer initCapacity, Integer capacity, Integer secondsAddCount) {
@@ -197,7 +209,7 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
         public boolean tryAcquire() {
             try {
                 boolean offer = this.offer();
-            } finally {         
+            } finally {
                 Integer poll = queue.poll();
                 return poll != null;
             }
@@ -207,6 +219,9 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
             long timeMillis = System.currentTimeMillis();
             Long differenceTime = timeMillis - modificationTime.get();
             Long count = differenceTime / 1000 / seconds;
+            if(log.isDebugEnabled() && count < 1){
+                log.debug("There are {} tokens left in the container，Wait {} to get {} tokens",queue.size(),(seconds * 1000) - differenceTime,secondsAddCount);
+            }
             boolean flag = false;
             count = count * secondsAddCount;
             long sum = count + queue.size();

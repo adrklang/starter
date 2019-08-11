@@ -20,4 +20,5 @@ public @interface ResourceLimit {
     LimitService useLimitService() default LimitService.RATE;//默认使用GuavaRateLimitService,
     String limitServiceBeanName() default "";//如果LimitService设置为CONSUMER,那么此属性生效,此属性为容器里面实现了ResourceLimitService接口的beanname,用户如果要自定义限流规则，使用此属性即可
     int secondsAddCount() default 1;//每秒添加多少个令牌，此属性必须必capacity小，只适用于JDKRateLimitService
+
 }

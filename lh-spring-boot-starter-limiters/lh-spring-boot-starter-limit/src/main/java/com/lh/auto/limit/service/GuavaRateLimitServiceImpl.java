@@ -9,6 +9,7 @@ import com.lh.auto.limit.utils.IpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     @Autowired(required = false)
@@ -28,33 +30,42 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     private static Logger logger = LoggerFactory.getLogger(GuavaRateLimitServiceImpl.class);
     private static ConcurrentHashMap<String, RateLimiter> concurrentHashMap = new ConcurrentHashMap<>();
     private static ExecutorService executorService = null;
-    private static Thread guavaThread = null;
-    static{
-        executorService = Executors.newSingleThreadExecutor();
-        guavaThread = new Thread(() ->{
-            while(true){
-                try {
-                    Thread.sleep(1000);//每过1s检查一次
-                    Set<Map.Entry<String, RateLimiter>> entries = concurrentHashMap.entrySet();
-                    for(Map.Entry<String, RateLimiter> s:entries){
-                        String key = s.getKey();
-                        RateLimiter value = s.getValue();
-                        Long time = value.getTime();
-                        Long currentTime = System.currentTimeMillis();
-                        if(currentTime - time >= 1800000){//30分钟
-                            concurrentHashMap.remove(key);
-                            logger.info("Rate --- 限流对象超时，已删除:" + key);
+    private static AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+    /**
+     * guava限流缓存销毁时间
+     */
+    @Value("${resource.limit.guava.destroyTime:1800000}")
+    private Long waitTimeDestroy;
+    public void init(){
+        if(executorService == null){
+            executorService = Executors.newSingleThreadExecutor();
+            executorService.execute(() ->{
+                while(true){
+                    try {
+                        //每过1s检查一次
+                        Thread.sleep(1000);
+                        Set<Map.Entry<String, RateLimiter>> entries = concurrentHashMap.entrySet();
+                        for(Map.Entry<String, RateLimiter> s:entries){
+                            String key = s.getKey();
+                            RateLimiter value = s.getValue();
+                            Long time = value.getTime();
+                            Long currentTime = System.currentTimeMillis();
+                            //30分钟
+                            if(currentTime - time >= waitTimeDestroy){
+                                concurrentHashMap.remove(key);
+                                logger.info("Rate --- 限流对象超时，已删除:" + key);
+                            }
                         }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
-            }
-        });
-        guavaThread.setDaemon(true);
-        guavaThread.setName("GuavaRateLimitServiceImpl");
-        executorService.execute(guavaThread);
+            });
+            logger.info("GuavaLimit Thread Listener Create Success,createTime --- {}",System.currentTimeMillis());
+        }
     }
+
     @Override
     public Object rateLimitFallback(ResourceLimit resourceLimit,Object ... args) throws Exception {
         Class<?> fallbackFactoryClass = resourceLimit.fallbackFactory();
@@ -122,6 +133,14 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
 
     @Override
     public Boolean isExist(ResourceLimit resourceLimit){
+        if(!atomicBoolean.get()){
+            synchronized (GuavaRateLimitServiceImpl.class){
+                if(!atomicBoolean.get()){
+                    atomicBoolean.set(true);
+                    init();
+                }
+            }
+        }
         LimitType type = resourceLimit.type();
         switch (type){
             case SESSION: sessionLimit(resourceLimit);break;
