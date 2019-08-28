@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.lh.auth.clients.configuration.SecurityAuthorizationRollbackAutoConfiguration,\
+  com.lh.auth.clients.configuration.ClientDetailsServiceAutoConfiguration,\
+  com.lh.auth.clients.configuration.TokenParseConverterAutoConfiguration

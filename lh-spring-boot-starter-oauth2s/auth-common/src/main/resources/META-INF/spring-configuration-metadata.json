@@ -1,0 +1,42 @@
+{
+  "groups": [
+    {
+      "name": "lh.auto.auth",
+      "type": "com.lh.auth.clients.common.details.BaseAuthClientProperties",
+      "sourceType": "com.lh.auth.clients.common.details.BaseAuthClientProperties"
+    },
+    {
+      "name": "lh.auto.auth.jwt",
+      "type": "com.lh.auth.clients.token.jwt.JwtProperties",
+      "sourceType": "com.lh.auth.clients.token.jwt.JwtProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "lh.auto.auth.clients",
+      "type": "java.util.List<com.lh.auth.clients.common.details.BaseOauthClientDetails>",
+      "sourceType": "com.lh.auth.clients.common.details.BaseAuthClientProperties"
+    },
+    {
+      "name": "lh.auto.auth.jwt.private-key-path",
+      "type": "java.lang.String",
+      "sourceType": "com.lh.auth.clients.token.jwt.JwtProperties"
+    },
+    {
+      "name": "lh.auto.auth.jwt.public-key-path",
+      "type": "java.lang.String",
+      "sourceType": "com.lh.auth.clients.token.jwt.JwtProperties"
+    },
+    {
+      "name": "lh.auto.auth.jwt.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.lh.auth.clients.token.jwt.JwtProperties"
+    },
+    {
+      "name": "lh.auto.auth.jwt.signing-key",
+      "type": "java.lang.String",
+      "sourceType": "com.lh.auth.clients.token.jwt.JwtProperties"
+    }
+  ],
+  "hints": []
+}
