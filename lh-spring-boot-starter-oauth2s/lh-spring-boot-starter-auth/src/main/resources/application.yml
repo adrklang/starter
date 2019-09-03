@@ -1,0 +1,34 @@
+lh:
+  auto:
+    auth:
+      jwt:
+        privateKeyPath: C:\\Users\\10057\\Desktop\\privateKey.pri
+        publicKeyPath: C:\\Users\\10057\\Desktop\\publicKey.pub
+        secret: 123456
+        #private-key-path: classpath:privateKey.pri
+        #public-key-path: classpath:publicKey.pub
+      clients:
+        - clientId: security
+          redirectUris: http://localhost:8080
+          scopes:
+            - app
+            - test
+          authorizedGrantTypes:
+            - password
+            - authorization_code
+            - refresh_token
+          refreshTokenValiditySeconds: 18000
+          accessTokenValiditySeconds: 18000
+          secret: security_authorized
+        - clientId: clientSecurity
+          redirectUris: http://localhost:8080
+          scopes:
+            - app
+          authorizedGrantTypes:
+            - password
+            - authorization_code
+          refreshTokenValiditySeconds: 18000
+          accessTokenValiditySeconds: 18000
+          secret: clientSecurity_authorized
+          autoApprove: true
+debug: false

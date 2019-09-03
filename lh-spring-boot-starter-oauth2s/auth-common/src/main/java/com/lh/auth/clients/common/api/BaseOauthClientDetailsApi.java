@@ -3,6 +3,9 @@ package com.lh.auth.clients.common.api;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * clent 封装接口
+ */
 public interface BaseOauthClientDetailsApi {
     String getClientId();
 

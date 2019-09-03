@@ -1,25 +1,18 @@
 package com.lh.auth.clients.service;
 
 import com.lh.auth.clients.common.api.BaseOauthClientDetailsApi;
-import com.lh.auth.clients.common.details.BaseAuthClientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+/**
+ * 加载auth客户端的实现类,用户不需要注入此bean对象，如果要扩展，请继承AbstractAuthClientDetailsService抽象类
+ */
 public class DefaultAuthClientService extends AbstractAuthClientDetailsService<BaseOauthClientDetailsApi> {
 
     @Autowired
-    private BaseAuthClientProperties baseAuthClientProperties;
+    private LoadAuthClientService loadAuthClientService;
 
     @Override
     public BaseOauthClientDetailsApi getClient(String clientId) {
-        List<? extends BaseOauthClientDetailsApi> clients = baseAuthClientProperties.getClients();
-        Map<String, BaseOauthClientDetailsApi> clientDetailsMap = clients.stream().collect(Collectors.toMap(BaseOauthClientDetailsApi::getClientId, client -> client));
-        if(!clientDetailsMap.containsKey(clientId)){
-            throw new NullPointerException();
-        }
-        return clientDetailsMap.get(clientId);
+       return loadAuthClientService.loadByClientId(clientId);
     }
 }

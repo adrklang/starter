@@ -1,0 +1,26 @@
+
+lh:
+  auto:
+    auth:
+      jwt:
+        privateKeyPath: C:\\Users\\10057\\Desktop\\privateKey.pri
+        publicKeyPath: C:\\Users\\10057\\Desktop\\publicKey.pub
+        secret: 123456
+      clients:
+        - clientId: security
+          clientSecret: security_authorized
+          redirectUris:
+            - localhost
+          scope:
+            - app
+            - test
+          authorizedGrantTypes:
+            - password
+            - authorization_code
+            - refresh_token
+          autoApproveScopes:
+            - app
+          accessTokenValiditySeconds: 18000
+          refreshTokenValiditySeconds: 18000
+server:
+  port: 8081
