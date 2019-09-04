@@ -1,18 +1,19 @@
 package com.lh.auto.limit.service;
 
 import com.lh.auto.limit.annotation.ResourceLimit;
-import com.lh.auto.limit.fallback.DefaultFallbackFactory;
+import com.lh.auto.limit.fallback.FallbackFactoryInvokeExcutor;
 import com.lh.auto.limit.utils.IpUtils;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,8 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
     private static ConcurrentHashMap<String, JDKLimit> cache = null;
     private static ExecutorService executorService = null;
     private AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+    @Autowired
+    private FallbackFactoryInvokeExcutor fallbackFactoryInvokeExcutor;
     @Value("${resource.limit.jdk.destroyTime:1800000}")
     private Long waitTimeDestroy;
     static {
@@ -151,23 +154,8 @@ public class JDKRateLimitServiceImpl implements ResourceLimitService {
     }
 
     @Override
-    public Object rateLimitFallback(ResourceLimit resourceLimit, Object... args) throws Exception {
-        Class<?> fallbackFactoryClass = resourceLimit.fallbackFactory();
-        if (fallbackFactoryClass == DefaultFallbackFactory.class) {
-            Method fallback = fallbackFactoryClass.getMethod("fallback", Object.class);
-            Object invoke = fallback.invoke(null, resourceLimit.key());
-            return invoke;
-        }
-        Method[] methods = fallbackFactoryClass.getMethods();
-        Method targetMethod = null;
-        for (Method method : methods) {
-            if (method.getName().equals(resourceLimit.method())) {
-                targetMethod = method;
-                break;
-            }
-        }
-        Object invoke = targetMethod.invoke(null, args);
-        return invoke;
+    public Object rateLimitFallback(ResourceLimit resourceLimit, ProceedingJoinPoint proceedingJoinPoint) throws Exception {
+        return fallbackFactoryInvokeExcutor.invoke(resourceLimit.fallbackFactory(),resourceLimit.method(),proceedingJoinPoint);
     }
 
     @Data

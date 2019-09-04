@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.lh.auto</groupId>
             <artifactId>lh-spring-boot-starter-limit</artifactId>
-            <version>0.0.5</version>
+            <version>0.0.7</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

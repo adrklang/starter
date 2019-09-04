@@ -2,6 +2,8 @@ package com.lh.auto.limit.config;
 
 
 import com.lh.auto.limit.annotation.ResourceLimit;
+import com.lh.auto.limit.fallback.DefaultFallbackFactoryInvokeExecutor;
+import com.lh.auto.limit.fallback.FallbackFactoryInvokeExcutor;
 import com.lh.auto.limit.service.GuavaRateLimitServiceImpl;
 import com.lh.auto.limit.service.JDKRateLimitServiceImpl;
 import com.lh.auto.limit.service.ResourceLimitService;
@@ -10,6 +12,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.expression.ParseException;
 
@@ -17,10 +20,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Aspect
 public class ResourceLimitAutoConfiguration {
+
     @Autowired
     @Qualifier("GuavaRateLimitServiceImpl")
     private ResourceLimitService rateResourceLimitService;
+
     private static ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock();
+
     @Autowired
     @Qualifier("JDKRateLimitServiceImpl")
     private ResourceLimitService jdkResourceLimitService;
@@ -33,6 +39,13 @@ public class ResourceLimitAutoConfiguration {
     @Bean("GuavaRateLimitServiceImpl")
     public ResourceLimitService rateResourceLimitService(){
         return new GuavaRateLimitServiceImpl();
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean
+    public FallbackFactoryInvokeExcutor fallbackFactoryInvokeExcutor(){
+        return new DefaultFallbackFactoryInvokeExecutor();
     }
 
     @Bean
@@ -69,7 +82,7 @@ public class ResourceLimitAutoConfiguration {
                 if(b){
                     return proceedingJoinPoint.proceed();
                 }else{
-                    return resourceLimitService.rateLimitFallback(resourceLimit,proceedingJoinPoint.getArgs());
+                    return resourceLimitService.rateLimitFallback(resourceLimit,proceedingJoinPoint);
                 }
             }finally {
                 reentrantLock.readLock().unlock();

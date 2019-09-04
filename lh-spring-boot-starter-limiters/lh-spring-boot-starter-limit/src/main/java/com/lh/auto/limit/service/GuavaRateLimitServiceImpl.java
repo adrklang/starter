@@ -2,10 +2,11 @@ package com.lh.auto.limit.service;
 
 import com.lh.auto.limit.annotation.ResourceLimit;
 import com.lh.auto.limit.config.ResourceLimitAutoConfiguration;
-import com.lh.auto.limit.fallback.DefaultFallbackFactory;
+import com.lh.auto.limit.fallback.FallbackFactoryInvokeExcutor;
 import com.lh.auto.limit.model.LimitType;
 import com.lh.auto.limit.model.RateLimiter;
 import com.lh.auto.limit.utils.IpUtils;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +31,8 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     private static ConcurrentHashMap<String, RateLimiter> concurrentHashMap = new ConcurrentHashMap<>();
     private static ExecutorService executorService = null;
     private static AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+    @Autowired
+    private FallbackFactoryInvokeExcutor fallbackFactoryInvokeExcutor;
 
     /**
      * guava限流缓存销毁时间
@@ -67,23 +69,8 @@ public class GuavaRateLimitServiceImpl implements ResourceLimitService{
     }
 
     @Override
-    public Object rateLimitFallback(ResourceLimit resourceLimit,Object ... args) throws Exception {
-        Class<?> fallbackFactoryClass = resourceLimit.fallbackFactory();
-        if(fallbackFactoryClass == DefaultFallbackFactory.class){
-            Method fallback = fallbackFactoryClass.getMethod("fallback",Object.class);
-            Object invoke = fallback.invoke(null,resourceLimit.key());
-            return invoke;
-        }
-        Method[] methods = fallbackFactoryClass.getMethods();
-        Method targetMethod = null;
-        for(Method method : methods){
-            if(method.getName().equals(resourceLimit.method())){
-                targetMethod = method;
-                break;
-            }
-        }
-        Object invoke = targetMethod.invoke(null, args);
-        return invoke;
+    public Object rateLimitFallback(ResourceLimit resourceLimit, ProceedingJoinPoint joinPoint) throws Exception {
+        return fallbackFactoryInvokeExcutor.invoke(resourceLimit.fallbackFactory(),resourceLimit.method(),joinPoint);
     }
     private void sessionLimit(ResourceLimit resourceLimit){
         String key = getSessionKey(resourceLimit);

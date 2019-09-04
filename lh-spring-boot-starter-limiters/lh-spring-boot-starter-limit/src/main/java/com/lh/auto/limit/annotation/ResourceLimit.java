@@ -13,7 +13,7 @@ public @interface ResourceLimit {
     int capacity() default 15;//最大容量，只适用于JDKRateLimitService
     int initCapacity() default 10; //初始化容量，必须比capacity小，不然使用capacity的值
     String key();//限流key
-    int seconds() default 1;//seconds秒补充一个令牌
+    int seconds() default 1;//JDKRateLimitService 下 seconds秒补充secondsAddCount个令牌,GuavaRateLimitService下 sencods秒补充1个令牌
     Class<?> fallbackFactory() default DefaultFallbackFactory.class;
     String method() default "fallback";
     LimitType type() default LimitType.SESSION;//NONE 对所有用户生效,SESSION基于SESSIONID限流,IP基于IP

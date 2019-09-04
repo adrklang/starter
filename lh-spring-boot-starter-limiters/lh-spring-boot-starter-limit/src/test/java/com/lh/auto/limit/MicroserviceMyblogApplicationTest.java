@@ -30,9 +30,8 @@ public class MicroserviceMyblogApplicationTest {
     }
     @Test
     public void testMapLimit() throws InterruptedException {
-        for(int i = 0;i < 100;i++){
-            Thread.sleep(10);
-            Map<String, String> stringStringMap = testService.helloMap();
+        for(int i = 0;i < 50;i++){
+            Map<String, String> stringStringMap = testService.helloMap("str sts");
             System.out.println(stringStringMap);
         }
     }

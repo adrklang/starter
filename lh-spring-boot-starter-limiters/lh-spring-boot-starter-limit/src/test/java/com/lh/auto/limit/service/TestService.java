@@ -1,6 +1,7 @@
 package com.lh.auto.limit.service;
 
 import com.lh.auto.limit.annotation.ResourceLimit;
+import com.lh.auto.limit.fallback.FallbackPojoInfo;
 import com.lh.auto.limit.model.LimitService;
 import com.lh.auto.limit.model.LimitType;
 import org.springframework.stereotype.Component;
@@ -12,8 +13,8 @@ import java.util.Map;
 
 @Component
 public class TestService {
-    @ResourceLimit(key = "helloMap", capacity = 20,seconds = 5,fallbackFactory = FallBackFactory.class,method = "helloMap")
-    public Map<String,String> helloMap(){
+    @ResourceLimit(useLimitService = LimitService.JDK,key = "helloMap", capacity = 20,seconds = 5,initCapacity = 20,fallbackFactory = FallBackFactory.class,method = "helloMap")
+    public Map<String,String> helloMap(String str){
         Map<String,String> map = new HashMap<>();
         map.put("author","LH");
         map.put("age","21");
@@ -28,11 +29,13 @@ public class TestService {
     }
 
     public static class FallBackFactory{
-        public static Map<String,String> helloMap(){
+        public static Map<String,String> helloMap(String str, FallbackPojoInfo fallbackPojoInfo){
             Map<String,String> map = new HashMap<>();
             map.put("author","LH");
             map.put("age","21");
             map.put("limit","true");
+            System.out.println(str);
+            System.out.println(fallbackPojoInfo);
             return map;
         }
         public static List<String> helloList(){
