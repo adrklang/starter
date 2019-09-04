@@ -29,7 +29,7 @@ public class DefaultFallbackFactoryInvokeExecutor implements FallbackFactoryInvo
             List<Object> list = getParameters(parameterTypes, joinPoint);
             return method.invoke(null,list.toArray());
         } catch (Exception e) {
-            throw new ReflectiveOperationException("fallback exception");
+            throw new ReflectiveOperationException("fallback exception",e);
         }
     }
 

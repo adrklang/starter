@@ -2,7 +2,6 @@ package com.lh.auto.limit.config;
 
 
 import com.lh.auto.limit.annotation.ResourceLimit;
-import com.lh.auto.limit.condition.ConditionalFallbackFactoryInvokeExcutorOnMissBean;
 import com.lh.auto.limit.fallback.DefaultFallbackFactoryInvokeExecutor;
 import com.lh.auto.limit.fallback.FallbackFactoryInvokeExcutor;
 import com.lh.auto.limit.service.GuavaRateLimitServiceImpl;
@@ -14,7 +13,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.expression.ParseException;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -43,7 +41,6 @@ public class ResourceLimitAutoConfiguration {
     }
 
     @Bean
-    @Conditional(ConditionalFallbackFactoryInvokeExcutorOnMissBean.class)
     public FallbackFactoryInvokeExcutor fallbackFactoryInvokeExcutor(){
         return new DefaultFallbackFactoryInvokeExecutor();
     }
