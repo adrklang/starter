@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.lh.auto</groupId>
     <artifactId>lh-spring-boot-starter-limit</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <properties>
         <spring_boot.version>2.1.6.RELEASE</spring_boot.version>
         <guava.version>20.0</guava.version>

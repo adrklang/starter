@@ -15,6 +15,14 @@ public class FallbackFactory extends TestService {
      */
     public static String message(FallbackPojoInfo info,String message,  HttpServletRequest request){
         System.out.println(info);
+        System.out.println("message method");
+        System.out.println(message);
+        return "hello " + info + request;
+    }
+    public static String message1(FallbackPojoInfo info,String message,  HttpServletRequest request){
+        System.out.println(info);
+        System.out.println("message 1 method");
+        System.out.println(message);
         return "hello " + info + request;
     }
 }

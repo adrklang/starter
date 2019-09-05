@@ -40,6 +40,7 @@ public class ResourceLimitAutoConfiguration {
         return new GuavaRateLimitServiceImpl();
     }
 
+
     @Bean
     public FallbackFactoryInvokeExcutor fallbackFactoryInvokeExcutor(){
         return new DefaultFallbackFactoryInvokeExecutor();
