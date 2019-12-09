@@ -1,0 +1,2 @@
+org.springframework.context.ApplicationContextInitializer=com.lhstack.autoconfig.ContextInitializerConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.lhstack.autoconfig.ContextInitializerConfig
