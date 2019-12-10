@@ -8,13 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -25,13 +24,14 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 
-public class ContextInitializerConfig implements ApplicationContextInitializer<GenericWebApplicationContext>, SmartLifecycle {
+public class PluginConfiguration implements SmartLifecycle {
 
     private boolean isRunning;
 
     private Map<String,Class> beans = new HashMap<>();
 
-    private static GenericWebApplicationContext applicationContext;
+    @Autowired
+    private GenericApplicationContext applicationContext;
 
     private static final String PLUGIN_CLASS_PATH_NAME = "plugin.factories";
 
@@ -101,32 +101,30 @@ public class ContextInitializerConfig implements ApplicationContextInitializer<G
     private void initHandlerMapping(RequestMapping requestMapping, Class value,String key) {
         Method[] methods = value.getMethods();
         for (Method method : methods) {
-            boolean flag = false;
             GetMapping getMapping = AnnotationUtils.getAnnotation(method, GetMapping.class);
-            if(getMapping != null && !flag){
+            if(getMapping != null){
                 registryGetHandlerMapping(requestMapping,getMapping,method,key);
-                flag = true;
+                continue;
             }
             PostMapping postMapping = AnnotationUtils.getAnnotation(method, PostMapping.class);
-            if(postMapping != null && !flag){
+            if(postMapping != null){
                 registryPostHandlerMapping(requestMapping,postMapping,method,key);
-                flag = true;
+                continue;
             }
             PutMapping putMapping = AnnotationUtils.getAnnotation(method, PutMapping.class);
-            if(putMapping != null && !flag){
+            if(putMapping != null){
                 registryPutHandlerMapping(requestMapping,putMapping,method,key);
-                flag = true;
+                continue;
             }
             DeleteMapping deleteMapping = AnnotationUtils.getAnnotation(method,DeleteMapping.class);
-            if(deleteMapping != null && !flag){
+            if(deleteMapping != null){
                 registryDeleteHandlerMapping(requestMapping,deleteMapping,method,key);
-                flag = true;
+                continue;
             }
 
             RequestMapping requestMappings = AnnotationUtils.getAnnotation(method,RequestMapping.class);
-            if(requestMappings != null && !flag){
+            if(requestMappings != null){
                 registryRequestHandlerMapping(requestMapping,requestMappings,method,key);
-                flag = true;
             }
         }
     }
@@ -311,8 +309,4 @@ public class ContextInitializerConfig implements ApplicationContextInitializer<G
         return isRunning;
     }
 
-    @Override
-    public void initialize(GenericWebApplicationContext genericWebApplicationContext) {
-        applicationContext = genericWebApplicationContext;
-    }
 }

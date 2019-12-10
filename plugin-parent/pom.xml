@@ -10,8 +10,10 @@
     <modules>
         <module>plugin-api</module>
         <module>plugin-utils</module>
-        <module>plugin-spring-servlet</module>
-        <module>plugin-test</module>
+        <module>plugin-webmvc-spring-boot-starter</module>
+        <module>plugin-webflux-spring-boot-starter</module>
+        <module>plugin-webflux</module>
+        <module>plugin-webmvc</module>
     </modules>
     <packaging>pom</packaging>
     <name>spring boot common plugin package</name>
@@ -20,6 +22,8 @@
         <java.encoding>UTF-8</java.encoding>
         <lombok.version>1.18.10</lombok.version>
         <common.lang3.version>3.9</common.lang3.version>
+        <spring.version>5.1.4.RELEASE</spring.version>
+        <spring.boot.version>2.2.1.RELEASE</spring.boot.version>
     </properties>
     <dependencyManagement>
         <dependencies>
