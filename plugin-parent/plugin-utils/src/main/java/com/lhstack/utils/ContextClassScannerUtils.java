@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -24,7 +25,7 @@ public final class ContextClassScannerUtils {
     public static Set<String> scanner(String path) throws Exception {
         File file = new File(path);
         if(!file.exists())
-            return null;
+            return new HashSet<>();
         if(isJar(file)){
             initJar(file);
         }else{
