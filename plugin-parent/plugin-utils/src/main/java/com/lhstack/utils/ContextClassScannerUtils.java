@@ -4,18 +4,15 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public final class ContextClassScannerUtils {
 
-    private static Map<String,Class<?>> cacheMap = new HashMap<>();
+    private static Map<String,String> cacheMap = new HashMap<>();
 
+    private static Set<String> jarCache = new HashSet<>();
     /**
      * 扫描
      * @param path
@@ -32,6 +29,14 @@ public final class ContextClassScannerUtils {
             initDirector(file);
         }
         return cacheMap.keySet();
+    }
+
+    public static Map<String, String> getCacheMap() {
+        return cacheMap;
+    }
+
+    public static Set<String> getJarCache() {
+        return jarCache;
     }
 
     /**
@@ -58,18 +63,21 @@ public final class ContextClassScannerUtils {
      * @throws Exception
      */
     private static void initJar(File file) throws Exception {
-        JarFile jarFile = new JarFile(file);
-        addUrl(file.toURI().toURL());
-        Enumeration<JarEntry> entries = jarFile.entries();
-        while(entries.hasMoreElements()){
-            JarEntry jarEntry = entries.nextElement();
-            String name = jarEntry.getName();
-            if(name.endsWith(".class")){
-                String key = name.replace(".class","").replaceAll("/",".");
-                try{
-                    cacheMap.put(key,Class.forName(key));
-                }catch (Error e){
+        if(!jarCache.contains(file.getName())){
+            jarCache.add(file.getName());
+            JarFile jarFile = new JarFile(file);
+            addUrl(file.toURI().toURL());
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while(entries.hasMoreElements()){
+                JarEntry jarEntry = entries.nextElement();
+                String name = jarEntry.getName();
+                if(name.endsWith(".class")){
+                    String key = name.replace(".class","").replaceAll("/",".");
+                    try{
+                        cacheMap.put(key,key);
+                    }catch (Error e){
 
+                    }
                 }
             }
         }
@@ -88,6 +96,10 @@ public final class ContextClassScannerUtils {
         method.invoke(urlClassLoader,url);
     }
 
+    public static ClassLoader getClassLoader(){
+        return ClassLoader.getSystemClassLoader() == null ? Thread.currentThread().getContextClassLoader() : ClassLoader.getSystemClassLoader();
+    }
+
     /**
      * 判断是否是jar文件
      * @param file
@@ -101,10 +113,17 @@ public final class ContextClassScannerUtils {
     }
 
     public static URLClassLoader getURLClassLoader(){
-        return (URLClassLoader) ClassLoader.getSystemClassLoader();
+        if(ClassLoader.getSystemClassLoader() instanceof URLClassLoader){
+            return (URLClassLoader) ClassLoader.getSystemClassLoader();
+        }
+
+        throw new NullPointerException("URLClassLoader不存在");
     }
 
     private static Method getAddUrlMethod() throws Exception {
+
         return URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
     }
+
+
 }

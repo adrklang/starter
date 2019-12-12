@@ -1,91 +1,34 @@
 package com.lhstack.autoconfig;
 
-import com.lhstack.utils.ContextClassScannerUtils;
+import com.lhstack.spring.context.SpringPluginContextApplication;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.context.SmartLifecycle;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.method.RequestMappingInfo;
 import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class PluginConfiguration implements SmartLifecycle {
-
-    private boolean isRunning;
-
-    private Map<String,Class> beans = new HashMap<>();
-
-    @Autowired
-    private GenericApplicationContext applicationContext;
-
-    private static final String PLUGIN_CLASS_PATH_NAME = "plugin.factories";
-
-    private List<Properties> properties = new ArrayList<>();
+public class PluginConfiguration extends SpringPluginContextApplication {
 
     @Autowired
     private RequestMappingHandlerMapping requestMappingHandlerMapping;
 
-    @Value("${plugin.class.path:E:\\plugins}")
-    private String path;
-
     @SneakyThrows
     @Override
     public void start() {
-        scanner();
-        this.isRunning = true;
-    }
-
-    /**
-     * 加载配置文件
-     * @throws IOException
-     */
-    private void initLoadProperties() throws IOException {
-        URLClassLoader urlClassLoader = ContextClassScannerUtils.getURLClassLoader();
-        Enumeration<URL> resources = urlClassLoader.getResources("META-INF/" + PLUGIN_CLASS_PATH_NAME);
-        while(resources.hasMoreElements()){
-            URL url = resources.nextElement();
-            InputStream in = (InputStream) url.getContent();
-            Properties properties = new Properties();
-            properties.load(in);
-            this.properties.add(properties);
-        }
-    }
-
-
-    public void scanner() throws Exception {
-        /**
-         * 扫描插件
-         */
-        Set<String> scanner = ContextClassScannerUtils.scanner(path);
-        initLoadProperties();
-        Iterator<String> iterator = scanner.iterator();
-        while(iterator.hasNext()){
-            String clazz = iterator.next();
-            initComponent(clazz);
-        }
-        /**
-         * 初始化controller
-         */
+        super.start();
         initController();
     }
 
     private void initController() {
-        Set<Map.Entry<String, Class>> entries = beans.entrySet();
+        Set<Map.Entry<String, Class>> entries = getBeans().entrySet();
         for (Map.Entry<String, Class> entry : entries) {
             Class value = entry.getValue();
             Controller annotation = AnnotationUtils.findAnnotation(value, Controller.class);
@@ -249,12 +192,16 @@ public class PluginConfiguration implements SmartLifecycle {
     }
 
     private String[] builderPath(String s, String[] value) {
+        if(value.length == 0){
+            return new String[]{s};
+        }
         List<String> list = new ArrayList<>();
         for (String path : value) {
             list.add(parsePath(s,path));
         }
         return list.toArray(new String[list.size()]);
     }
+
 
     private String parsePath(String s, String path) {
         if(s.endsWith("/") && path.startsWith("/")){
@@ -275,28 +222,6 @@ public class PluginConfiguration implements SmartLifecycle {
     private void registryHandlerMapping(RequestMappingInfo requestMappingInfo, Method method,String key) {
         System.out.println("plugin registry handler mapping url is ===> " + requestMappingInfo);
         requestMappingHandlerMapping.registerMapping(requestMappingInfo,key,method);
-    }
-
-
-    /**
-     * 初始化组件
-     * @param clazz
-     * @throws Exception
-     */
-    private void initComponent(String clazz) throws Exception {
-        Class<?> c = Class.forName(clazz);
-        Component annotation = AnnotationUtils.findAnnotation(c, Component.class);
-        if(annotation != null){
-            String cName = c.getName().substring(c.getName().lastIndexOf(".") + 1, c.getName().length());
-            String beanName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : cName.substring(0,1).toLowerCase() + cName.substring(1,cName.length());
-            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(c);
-            AbstractBeanDefinition singleton = beanDefinitionBuilder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE)
-                    .setScope("singleton")
-                    .getRawBeanDefinition();
-            singleton.setAutowireCandidate(true);
-            applicationContext.registerBeanDefinition(beanName,singleton);
-            beans.put(beanName,c);
-        }
     }
 
     @Override

@@ -1,0 +1,2 @@
+com.lhstack.api.initialize.PluginContextApplicationInitialize=com.lhstack.spring.initialize.SpringConfigurationBeanInitialize
+com.lhstack.api.initialize.PluginAutoConfiguration=com.lhstack.spring.autoconfig.SpringPluginAutoConfiguration

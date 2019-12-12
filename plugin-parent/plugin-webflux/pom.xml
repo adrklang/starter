@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>com.lhstack</groupId>
-            <artifactId>plugin-utils</artifactId>
+            <artifactId>plugin-spring</artifactId>
             <version>0.0.1</version>
         </dependency>
     </dependencies>

@@ -14,6 +14,8 @@
         <module>plugin-webflux-spring-boot-starter</module>
         <module>plugin-webflux</module>
         <module>plugin-webmvc</module>
+        <module>plugin-core</module>
+        <module>plugin-spring</module>
     </modules>
     <packaging>pom</packaging>
     <name>spring boot common plugin package</name>

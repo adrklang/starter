@@ -1,0 +1,6 @@
+com.lhstack.api.properties.PluginPlaceHolderProperties=com.lhstack.core.placeholder.DefaultPluginPlaceHolderProperties
+com.lhstack.api.initialize.PluginContextApplicationInitialize=com.lhstack.core.bean.NormalPluginBeanContextInitialize,\
+  com.lhstack.core.bean.FactoryBeanPluginBeanContextInitialize,\
+  com.lhstack.core.bean.ConfigurationPluginBeanContextInitialize,\
+  com.lhstack.core.bean.MoreParameterConstructorPluginBeanContextInitialize
+com.lhstack.api.bind.ParameterBind=com.lhstack.core.parameter.DefaultParameterBindImpl
