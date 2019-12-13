@@ -3,6 +3,7 @@ package com.lhstack.spring.context;
 import com.lhstack.core.context.PluginContextApplication;
 import com.lhstack.core.utils.BeanUtils;
 import com.lhstack.spring.autoconfig.SpringPluginAutoConfiguration;
+import com.lhstack.spring.initialize.SpringConfigurationBeanInitialize;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +57,12 @@ public class SpringPluginContextApplication extends PluginContextApplication imp
         initBeanAfter();
     }
 
+    public void clear(){
+        beans.entrySet().forEach(item ->{
+            applicationContext.removeBeanDefinition(item.getKey());
+        });
+    }
+
     private void initAutoConfiguration() {
         List<Object> collect = getFactories().stream().map(item -> item.getProperty(SpringPluginAutoConfiguration.AUTO_CONFIG))
                 .filter(StringUtils::isNotBlank)
@@ -71,6 +78,8 @@ public class SpringPluginContextApplication extends PluginContextApplication imp
         collect.forEach(item ->{
             beans.put(BeanUtils.getKey("",item.getClass()),item.getClass());
             applicationContext.getBeanFactory().registerSingleton(BeanUtils.getKey("",item.getClass()),item);
+            SpringConfigurationBeanInitialize springConfigurationBeanInitialize = new SpringConfigurationBeanInitialize();
+            springConfigurationBeanInitialize.registryBean(item.getClass(),this);
         });
     }
 

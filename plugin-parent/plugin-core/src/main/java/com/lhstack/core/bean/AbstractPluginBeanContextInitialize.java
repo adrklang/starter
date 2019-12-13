@@ -25,9 +25,7 @@ public abstract class AbstractPluginBeanContextInitialize implements PluginConte
 
     protected void put(String key,Object bean,PluginContext pluginContext){
         Map<String, Object> beanCache = pluginContext.getBeanCache();
-        Map<String, Object> originBeanCache = pluginContext.getOriginBeanCache();
         beanCache.put(key,bean);
-        originBeanCache.put(key,bean);
     }
 
     @Override

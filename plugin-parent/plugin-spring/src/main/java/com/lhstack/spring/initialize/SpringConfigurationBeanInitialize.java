@@ -26,7 +26,7 @@ public class SpringConfigurationBeanInitialize implements PluginContextApplicati
 
     }
 
-    private void registryBean(Class clazz, SpringPluginContextApplication pluginContext) {
+    public void registryBean(Class clazz, SpringPluginContextApplication pluginContext) {
         Method[] declaredMethods = clazz.getMethods();
         Arrays.asList(declaredMethods).forEach(em ->{
             Bean annotation = AnnotationUtils.findAnnotation(em, Bean.class);

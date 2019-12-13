@@ -31,7 +31,6 @@ public class PluginContextApplication implements PluginContext {
      */
     private static List<Properties> factories = new ArrayList<>();
 
-    private static Map<String,Object> originBeanCache = new HashMap<>();
 
     /**
      * 读取的所有class文件
@@ -51,14 +50,6 @@ public class PluginContextApplication implements PluginContext {
 
     }
 
-    public static Set<String> getJarCache(){
-        return ContextClassScannerUtils.getJarCache();
-    }
-
-    @Override
-    public Map<String, Object> getOriginBeanCache() {
-        return originBeanCache;
-    }
 
     public void init(String path) throws Exception {
         scanner(path);

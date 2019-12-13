@@ -1,0 +1,13 @@
+独立成一个plugin框架
+
+并添加对spring支持，如要让插件拥有spring的特性，使用plugin-spring实现对spring的整合
+
+如果要开发rest接口，提供对webflux，webservlet的支持
+
+使用插件时，请吧sprngboot生成的pom里面的插件取消，同时将插件生成jar包的形式，项目配置
+
+plugin.class.path属性，此属性标识插件所在目录或者插件本身jar文件
+
+如果是springboot，引入带starter的依赖
+
+如果是spring，通过注解EnableAutoPlugin开启支持，此注解的bean必须在spring容器

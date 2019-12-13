@@ -15,5 +15,4 @@ public interface PluginContext {
 
     Set<String> getClassEss();
 
-    Map<String,Object> getOriginBeanCache();
 }

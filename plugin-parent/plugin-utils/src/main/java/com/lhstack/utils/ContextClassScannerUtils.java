@@ -12,7 +12,7 @@ public final class ContextClassScannerUtils {
 
     private static Map<String,String> cacheMap = new HashMap<>();
 
-    private static Set<String> jarCache = new HashSet<>();
+    private static Map<String,List<String>> jarCache = new HashMap<>();
     /**
      * 扫描
      * @param path
@@ -35,7 +35,7 @@ public final class ContextClassScannerUtils {
         return cacheMap;
     }
 
-    public static Set<String> getJarCache() {
+    public static Map<String, List<String>> getJarCache() {
         return jarCache;
     }
 
@@ -63,8 +63,8 @@ public final class ContextClassScannerUtils {
      * @throws Exception
      */
     private static void initJar(File file) throws Exception {
-        if(!jarCache.contains(file.getName())){
-            jarCache.add(file.getName());
+        if(!jarCache.containsKey(file.getAbsolutePath())){
+            List<String> list = new ArrayList<>();
             JarFile jarFile = new JarFile(file);
             addUrl(file.toURI().toURL());
             Enumeration<JarEntry> entries = jarFile.entries();
@@ -72,6 +72,7 @@ public final class ContextClassScannerUtils {
                 JarEntry jarEntry = entries.nextElement();
                 String name = jarEntry.getName();
                 if(name.endsWith(".class")){
+                    list.add(name);
                     String key = name.replace(".class","").replaceAll("/",".");
                     try{
                         cacheMap.put(key,key);
@@ -80,6 +81,7 @@ public final class ContextClassScannerUtils {
                     }
                 }
             }
+            jarCache.put(file.getAbsolutePath(),list);
         }
     }
 
